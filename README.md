@@ -1,2 +1,2 @@
-# mybatis-plugin
+# mybatis-sharding-plugin
 分库分表
