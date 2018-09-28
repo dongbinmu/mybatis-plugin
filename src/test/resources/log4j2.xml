@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn">
+    <Appenders>
+        <Console name="Console">
+            <PatternLayout
+                    pattern="[%-5p %d{yyyy-MM-dd HH:mm:ss.SSS}] [%t] [%X{SessionId}] [%c{1}.%M] [%m]%n" />
+        </Console>
+    </Appenders>
+    <Loggers>
+        <asyncRoot level="debug" includeLocation="true">
+            <AppenderRef ref="Console" />
+        </asyncRoot>
+    </Loggers>
+</Configuration>
+

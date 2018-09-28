@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <context:annotation-config/>
+    <context:component-scan base-package="com.weaponlin"></context:component-scan>
+
+    <context:property-placeholder location="classpath:jdbc.properties" ignore-unresolvable="true" />
+
+    <!-- 数据源配置 dbcp -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+          destroy-method="close">
+        <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.userName}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="minPoolSize" value="10"/>
+        <property name="initialPoolSize" value="10"/>
+        <property name="maxPoolSize" value="20"/>
+        <property name="acquireIncrement" value="10"/>
+        <property name="maxIdleTime" value="3600"/>
+        <property name="testConnectionOnCheckout" value="false"/>
+        <property name="preferredTestQuery" value="select 1"/>
+        <property name="idleConnectionTestPeriod" value="1800"/>
+    </bean>
+
+    <!--配置DataSource数据源-->
+    <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!--配置SqlSessionFactoryBean-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="mapperLocations" value="classpath:/mapper/*Mapper.xml" />
+        <!--<property name="plugins">-->
+            <!--<array>-->
+                <!--<bean class="com.weaponlin.mybatis.plugin.ShardingInterceptor">-->
+                <!--</bean>-->
+            <!--</array>-->
+        <!--</property>-->
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+    </bean>
+
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg ref="sqlSessionFactory" />
+    </bean>
+    <!--查找类路径下的映射器并自动将它们创建成 MapperFactoryBean-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.weaponlin.mapper" />
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+    </bean>
+</beans>
