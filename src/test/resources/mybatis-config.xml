@@ -6,7 +6,10 @@
     <plugins>
         <!-- TODO how to set properties -->
         <plugin interceptor="com.weaponlin.mybatis.plugin.ShardingInterceptor">
-            <property name="demo" value="user"/>
+            <property name="tables" value="demo.user"/>
+            <property name="databaseSize" value="100"/>
+            <property name="tableSize" value="10"/>
+            <property name="shardingStrategy" value="com.weaponlin.mybatis.plugin.strategy.RemainderShardingStrategy"/>
         </plugin>
     </plugins>
 </configuration>

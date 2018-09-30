@@ -1,6 +1,5 @@
 package com.weaponlin.mybatis.plugin;
 
-import com.weaponlin.mybatis.plugin.strategy.RemainderShardingStrategy;
 import com.weaponlin.mybatis.plugin.strategy.ShardingStrategy;
 import com.weaponlin.mybatis.plugin.util.SQLUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +31,10 @@ public class ShardingInterceptor implements Interceptor {
 
     private ShardingStrategy shardingStrategy;
 
-    private DatabaseAndTable databaseAndTable;
+    /**
+     * TODO
+     */
+    private ShardingProperties shardingProperties;
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
@@ -66,16 +68,15 @@ public class ShardingInterceptor implements Interceptor {
         log.info("sql: {}", sql);
         // 1. get database and table
         Pair<String, String> databaseAndTable = SQLUtil.getDatabaseAndTable(sql, sqlCommandType);
-        if (databaseAndTable == null) {
+        if (databaseAndTable == null || !shardingProperties.isValidDatabaseAndTable(databaseAndTable)) {
             return sql;
         }
 
         // 2. sharding database and table with sharding strategy
         Object hash = ((MapperMethod.ParamMap) boundSql.getParameterObject()).get("hash");
-        String completeTable = shardingStrategy.completeTable(databaseAndTable.getLeft(), databaseAndTable.getRight(), (Long) hash);
+        String completeTable = shardingStrategy.completeTable(databaseAndTable.getLeft(), databaseAndTable.getRight(),
+                shardingProperties.getDatabaseSize(), shardingProperties.getTableSize(), (Long) hash);
 
-
-        // TODO refactor
         // 3. replace old table with new table
         String oldTable = " " + databaseAndTable.getLeft() + "." + databaseAndTable.getRight();
         String newTable = " " + completeTable + " ";
@@ -94,8 +95,13 @@ public class ShardingInterceptor implements Interceptor {
 
     @Override
     public void setProperties(final Properties properties) {
-        this.databaseAndTable = DatabaseAndTable.fromProperties(properties);
-        System.out.println(databaseAndTable);
-        shardingStrategy = new RemainderShardingStrategy();
+        shardingProperties = ShardingProperties.fromProperties(properties);
+        try {
+            Class<?> clazz = Class.forName(shardingProperties.getShardingStrategy());
+            shardingStrategy = (ShardingStrategy) clazz.newInstance();
+        } catch (Exception e) {
+            log.error("error occurred when set properties", e);
+            throw new RuntimeException("initialize sharding strategy ");
+        }
     }
 }

@@ -5,12 +5,5 @@ package com.weaponlin.mybatis.plugin.strategy;
  */
 public interface ShardingStrategy {
 
-    /**
-     * TODO add dataBaseSize and tableSize
-     * @param database
-     * @param table
-     * @param hash
-     * @return
-     */
-    String completeTable(String database, String table, Long hash);
+    String completeTable(String database, String table, int databaseSize, int tableSize, Long hash);
 }

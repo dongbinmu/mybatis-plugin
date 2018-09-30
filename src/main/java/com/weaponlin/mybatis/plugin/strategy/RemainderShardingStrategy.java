@@ -3,11 +3,10 @@ package com.weaponlin.mybatis.plugin.strategy;
 public class RemainderShardingStrategy implements ShardingStrategy {
 
     @Override
-    public String completeTable(String database, String table, Long hash) {
+    public String completeTable(String database, String table, int databaseSize, int tableSize, Long hash) {
         StringBuilder sb = new StringBuilder();
-        String index = String.valueOf(hash);
-        String dbIndex = index.substring(index.length() - 2);
-        String tableIndex = index.substring(index.length() - 3);
+        String dbIndex = String.format("%02d", hash % databaseSize);
+        String tableIndex = String.format("%03d", hash % tableSize);
         return sb.append(database)
                 .append("_")
                 .append(dbIndex)
